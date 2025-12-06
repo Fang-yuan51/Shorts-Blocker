@@ -37,9 +37,9 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowForward
-import androidx.compose.material.icons.rounded.Block
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.VideoLibrary
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -196,7 +196,7 @@ private fun WelcomePage() {
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Block,
+                    imageVector = Icons.Rounded.Close,
                     contentDescription = null,
                     modifier = Modifier.size(64.dp),
                     tint = MaterialTheme.colorScheme.primary,
@@ -294,7 +294,7 @@ private fun HowItWorksPage() {
         // YouTube Flow
         FlowDiagram(
             platformName = "YouTube Shorts",
-            platformIcon = Icons.Rounded.VideoLibrary,
+            platformIcon = Icons.Rounded.PlayArrow,
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -302,7 +302,7 @@ private fun HowItWorksPage() {
         // Instagram Flow
         FlowDiagram(
             platformName = "Instagram Reels",
-            platformIcon = Icons.Rounded.VideoLibrary,
+            platformIcon = Icons.Rounded.PlayArrow,
         )
     }
 }
@@ -338,7 +338,7 @@ private fun FlowDiagram(
 
         // Block action
         FlowCard(
-            icon = Icons.Rounded.Block,
+            icon = Icons.Rounded.Close,
             label = "Blocked",
             color = MaterialTheme.colorScheme.primaryContainer,
             iconTint = MaterialTheme.colorScheme.primary,
