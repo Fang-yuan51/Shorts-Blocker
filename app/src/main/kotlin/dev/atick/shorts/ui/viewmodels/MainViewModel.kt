@@ -38,11 +38,13 @@ import timber.log.Timber
  * @property isGranted Whether accessibility service permission is granted
  * @property isChecking Whether a permission check is in progress
  * @property trackedPackages List of available packages with their enabled status
+ * @property showDisclosure Whether to show disclosure screen
  */
 data class ServiceState(
     val isGranted: Boolean = false,
     val isChecking: Boolean = false,
     val trackedPackages: List<TrackedPackage> = emptyList(),
+    val showDisclosure: Boolean = false,
 )
 
 /**
@@ -113,6 +115,35 @@ class MainViewModel(
 
             Timber.i("Service check complete: isGranted=$isGranted")
         }
+    }
+
+    /**
+     * Show disclosure screen.
+     */
+    fun showDisclosure() {
+        Timber.d("Showing disclosure screen")
+        _serviceState.update { it.copy(showDisclosure = true) }
+    }
+
+    /**
+     * Hide disclosure screen.
+     */
+    fun hideDisclosure() {
+        Timber.d("Hiding disclosure screen")
+        _serviceState.update { it.copy(showDisclosure = false) }
+    }
+
+    /**
+     * Accept disclosure and open accessibility settings.
+     * Marks disclosure as accepted and opens system settings.
+     */
+    fun acceptDisclosure(context: Context) {
+        Timber.i("Disclosure accepted - opening accessibility settings")
+        viewModelScope.launch {
+            userPreferencesProvider.setDisclosureAccepted(true)
+        }
+        hideDisclosure()
+        openAccessibilitySettings(context)
     }
 
     /**
