@@ -1,3 +1,14 @@
+<div align="center"><a href="https://github.com/Safouene1/support-palestine-banner/blob/master/Markdown-pages/Support.md"><img src="https://raw.githubusercontent.com/Safouene1/support-palestine-banner/master/banner-support.svg" alt="Support Palestine" style="width: 100%;"></a></div>
+
+<img width="2048" height="999" alt="Feature-Graphics" src="https://github.com/user-attachments/assets/9051e7e9-b523-4d10-afbc-4f77c4d842b5" />
+
+<p align="center">
+<a href="https://github.com/atick-faisal/Shorts-Blocker/releases"><img src="https://img.shields.io/github/release/atick-faisal/Shorts-Blocker?colorA=363a4f&colorB=b7bdf8&style=for-the-badge"></a>
+<a href="https://github.com/atick-faisal/Shorts-Blocker/issues"><img src="https://img.shields.io/github/issues/atick-faisal/Shorts-Blocker?colorA=363a4f&colorB=f5a97f&style=for-the-badge"></a>
+<a href="https://github.com/atick-faisal/Shorts-Blocker/contributors"><img src="https://img.shields.io/github/contributors/atick-faisal/Shorts-Blocker?colorA=363a4f&colorB=a6da95&style=for-the-badge"></a>
+<img src="https://img.shields.io/github/actions/workflow/status/atick-faisal/Shorts-Blocker/ci.yml?style=for-the-badge&logo=android&labelColor=363a4f"/>
+</p>
+
 # Shorts Blocker
 
 An Android app that automatically blocks short-form content (YouTube Shorts, Instagram Reels) using accessibility services.
@@ -104,3 +115,7 @@ A: Yes! Check the [Getting Started Guide](docs/getting-started.md) to learn how 
 
 **Q: Why isn't it detecting content?**  
 A: Detection patterns may need updating after app updates. Open an issue with your app version.
+
+<p align="center"><img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/footers/gray0_ctp_on_line.svg?sanitize=true" /></p>
+<p align="center"><a href="https://sites.google.com/view/mchowdhury" target="_blank">Qatar University Machine Learning Group</a>
+<p align="center"><a href="https://github.com/atick-faisal/Shorts-Blocker/blob/main/LICENSE"><img src="https://img.shields.io/github/license/atick-faisal/Shorts-Blocker?style=for-the-badge&colorA=363a4f&colorB=b7bdf8"/></a></p>
