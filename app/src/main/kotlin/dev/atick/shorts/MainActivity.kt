@@ -17,47 +17,94 @@
 package dev.atick.shorts
 
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import dev.atick.shorts.ui.screens.AccessibilityPermissionScreen
 import dev.atick.shorts.ui.theme.ShortsBlockerTheme
+import dev.atick.shorts.ui.viewmodels.AccessibilityPermissionViewModel
+import timber.log.Timber
 
 class MainActivity : ComponentActivity() {
+
+    private val viewModel: AccessibilityPermissionViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        Timber.d("MainActivity onCreate")
+
+        val enabledServices = Settings.Secure.getString(
+            applicationContext.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
+        )
+
+        Timber.d("---------------- Enabled Services --------------")
+        Timber.d(enabledServices)
+
         setContent {
             ShortsBlockerTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding),
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background,
+                ) {
+                    AccessibilityPermissionScreenWithLifecycle(
+                        viewModel = viewModel,
                     )
                 }
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier,
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun GreetingPreview() {
-    ShortsBlockerTheme {
-        Greeting("Android")
+    override fun onResume() {
+        super.onResume()
+        Timber.d("MainActivity onResume")
+        viewModel.onResume()
     }
+}
+
+/**
+ * Wrapper that handles lifecycle events for the permission screen.
+ * This ensures permission is rechecked when the app resumes.
+ */
+@Composable
+private fun AccessibilityPermissionScreenWithLifecycle(
+    viewModel: AccessibilityPermissionViewModel,
+) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> {
+                    Timber.d("Lifecycle ON_RESUME - checking permission")
+                    viewModel.onResume()
+                }
+
+                Lifecycle.Event.ON_PAUSE -> {
+                    Timber.d("Lifecycle ON_PAUSE")
+                }
+
+                else -> {}
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            Timber.d("Removing lifecycle observer")
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    AccessibilityPermissionScreen(viewModel = viewModel)
 }
