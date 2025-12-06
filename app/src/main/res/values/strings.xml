@@ -17,4 +17,12 @@
 
 <resources>
     <string name="app_name">Shorts Blocker</string>
+    
+    <!-- Tracked Packages -->
+    <string name="tracked_apps_title">Tracked Apps</string>
+    <string name="tracked_apps_count">Tracked Apps</string>
+    <string name="youtube_display_name">YouTube</string>
+    <string name="youtube_description">Block YouTube Shorts</string>
+    <string name="instagram_display_name">Instagram</string>
+    <string name="instagram_description">Block Instagram Reels</string>
 </resources>
