@@ -64,10 +64,12 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun ProminentDisclosureScreen(
+    modifier: Modifier = Modifier,
     onAgree: () -> Unit = {},
     onCancel: () -> Unit = {},
 ) {
     Scaffold(
+        modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
     ) { paddingValues ->
         Column(

@@ -40,8 +40,10 @@ import timber.log.Timber
 class UserPreferencesProvider(private val context: Context) {
 
     private val userPreferencesKey = stringPreferencesKey("dev.atick.shorts.preferences")
-    private val onboardingCompletedKey = booleanPreferencesKey("dev.atick.shorts.onboarding_completed")
-    private val disclosureAcceptedKey = booleanPreferencesKey("dev.atick.shorts.disclosure_accepted")
+    private val onboardingCompletedKey =
+        booleanPreferencesKey("dev.atick.shorts.onboarding_completed")
+    private val disclosureAcceptedKey =
+        booleanPreferencesKey("dev.atick.shorts.disclosure_accepted")
 
     /**
      * Gets the list of currently tracked (enabled) package names.
@@ -103,17 +105,6 @@ class UserPreferencesProvider(private val context: Context) {
     }
 
     /**
-     * Initializes preferences with default packages if none are set.
-     */
-    suspend fun initializeDefaultPackages() {
-        val currentPackages = getTrackedPackages().first()
-        if (currentPackages.isEmpty()) {
-            Timber.i("Initializing default packages")
-            setTrackedPackages(PackageConstants.DEFAULT_ENABLED_PACKAGES)
-        }
-    }
-
-    /**
      * Gets whether onboarding has been completed.
      *
      * @return Flow emitting true if onboarding is completed, false otherwise
@@ -133,17 +124,6 @@ class UserPreferencesProvider(private val context: Context) {
         Timber.i("Setting onboarding completed: $completed")
         context.dataStore.edit { preferences ->
             preferences[onboardingCompletedKey] = completed
-        }
-    }
-
-    /**
-     * Gets whether disclosure has been accepted.
-     *
-     * @return Flow emitting true if disclosure is accepted, false otherwise
-     */
-    fun getDisclosureAccepted(): Flow<Boolean> {
-        return context.dataStore.data.map { preferences ->
-            preferences[disclosureAcceptedKey] ?: false
         }
     }
 
