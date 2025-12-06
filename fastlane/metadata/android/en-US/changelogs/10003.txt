@@ -1,0 +1,5 @@
+Initial release of Shorts & Reels Blocker.
+• Blocks YouTube Shorts using Accessibility Service
+• Blocks Instagram Reels with automatic intercept
+• Lightweight, private, and fully offline
+• No ads, no tracking, no unnecessary permissions

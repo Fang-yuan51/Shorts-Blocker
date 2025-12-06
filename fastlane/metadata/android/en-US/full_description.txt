@@ -1,0 +1,16 @@
+Shorts & Reels Blocker helps you take control of short-form video distractions. It automatically blocks YouTube Shorts and Instagram Reels using a lightweight Accessibility Service, preventing accidental scroll loops and helping you stay focused on what matters.
+
+The app runs quietly in the background and intervenes only when you open Shorts or Reels, redirecting you back to the main feed. No data collection, no accounts, no internet access required.
+
+Key features
+• Blocks YouTube Shorts reliably
+• Blocks Instagram Reels with minimal disruption
+• Uses Accessibility Service for precise detection
+• No ads, no tracking, no unnecessary permissions
+• Lightweight, battery-friendly, and easy to use
+• Fully local operation with zero data sent anywhere
+
+Why it matters
+Short-form video feeds are engineered for endless scrolling. This tool restores control by removing the trigger point entirely. Ideal for productivity, digital well-being, and reducing mindless browsing.
+
+Enable the service once and let the app handle the rest. Stay focused, reduce distractions, and reclaim your attention.
