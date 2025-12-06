@@ -16,6 +16,14 @@
 
 package dev.atick.shorts.models
 
+/**
+ * Represents an app that can be tracked for short-form content blocking.
+ *
+ * @property packageName Android package identifier (e.g., "com.google.android.youtube")
+ * @property displayName User-friendly name shown in UI (e.g., "YouTube")
+ * @property description Brief description of what content is blocked (e.g., "Block YouTube Shorts")
+ * @property isEnabled Whether blocking is currently enabled for this app
+ */
 data class TrackedPackage(
     val packageName: String,
     val displayName: String,

@@ -19,6 +19,11 @@ package dev.atick.shorts
 import android.app.Application
 import timber.log.Timber
 
+/**
+ * Application class for initializing app-wide components.
+ *
+ * Sets up Timber logging for debug builds.
+ */
 class App : Application() {
     override fun onCreate() {
         super.onCreate()

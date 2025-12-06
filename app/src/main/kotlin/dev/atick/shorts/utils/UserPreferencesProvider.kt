@@ -28,10 +28,23 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
 
+/**
+ * Manages user preferences for tracked packages using DataStore.
+ *
+ * Provides methods to store and retrieve which app packages are enabled
+ * for short-form content blocking.
+ *
+ * @property context Application context for DataStore access
+ */
 class UserPreferencesProvider(private val context: Context) {
 
     private val userPreferencesKey = stringPreferencesKey("dev.atick.shorts.preferences")
 
+    /**
+     * Gets the list of currently tracked (enabled) package names.
+     *
+     * @return Flow emitting list of package names that are enabled for blocking
+     */
     fun getTrackedPackages(): Flow<List<String>> {
         return context.dataStore.data.map { preferences ->
             val packages = preferences[userPreferencesKey]?.split(",")?.filter { it.isNotBlank() }
@@ -41,6 +54,11 @@ class UserPreferencesProvider(private val context: Context) {
         }
     }
 
+    /**
+     * Updates the list of tracked packages.
+     *
+     * @param packages List of package names to enable for blocking
+     */
     suspend fun setTrackedPackages(packages: List<String>) {
         val packagesString = packages.joinToString(",")
         Timber.d("Setting tracked packages: $packagesString")
@@ -49,6 +67,11 @@ class UserPreferencesProvider(private val context: Context) {
         }
     }
 
+    /**
+     * Gets all available packages with their current enabled status.
+     *
+     * @return Flow emitting list of [TrackedPackage] with updated enabled state
+     */
     fun getTrackedPackagesWithStatus(): Flow<List<TrackedPackage>> {
         return getTrackedPackages().map { enabledPackages ->
             PackageConstants.AVAILABLE_PACKAGES.map { pkg ->
@@ -57,6 +80,12 @@ class UserPreferencesProvider(private val context: Context) {
         }
     }
 
+    /**
+     * Toggles blocking for a specific package.
+     *
+     * @param packageName Package identifier to toggle
+     * @param enabled true to enable blocking, false to disable
+     */
     suspend fun togglePackage(packageName: String, enabled: Boolean) {
         Timber.d("Toggling package: $packageName, enabled: $enabled")
         val currentPackages = getTrackedPackages().first().toMutableList()
@@ -70,6 +99,9 @@ class UserPreferencesProvider(private val context: Context) {
         setTrackedPackages(currentPackages)
     }
 
+    /**
+     * Initializes preferences with default packages if none are set.
+     */
     suspend fun initializeDefaultPackages() {
         val currentPackages = getTrackedPackages().first()
         if (currentPackages.isEmpty()) {

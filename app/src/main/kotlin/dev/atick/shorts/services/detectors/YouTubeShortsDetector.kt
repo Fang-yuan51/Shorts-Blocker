@@ -22,6 +22,16 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import timber.log.Timber
 
+/**
+ * Detector implementation for YouTube Shorts.
+ *
+ * Identifies when users are actively watching YouTube Shorts by analyzing:
+ * - Full-screen content with portrait aspect ratio
+ * - Presence of Shorts-specific player components
+ * - Video player controls and indicators
+ *
+ * Excludes false positives from thumbnails, feed items, and non-fullscreen content.
+ */
 class YouTubeShortsDetector : ShortFormContentDetector {
 
     override fun getPackageName(): String = "com.google.android.youtube"
@@ -103,6 +113,15 @@ class YouTubeShortsDetector : ShortFormContentDetector {
         return isActuallyWatchingShorts
     }
 
+    /**
+     * Checks if the accessibility node tree contains video player controls.
+     *
+     * Scans up to 80 nodes looking for player-specific UI elements like
+     * play/pause buttons, seekbars, and video surfaces.
+     *
+     * @param node Root node to start scanning from
+     * @return true if player controls are found
+     */
     private fun hasVideoPlayerControls(node: AccessibilityNodeInfo): Boolean {
         val stack = ArrayDeque<AccessibilityNodeInfo>()
         stack.add(node)

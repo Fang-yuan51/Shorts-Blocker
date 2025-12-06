@@ -39,6 +39,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.atick.shorts.models.TrackedPackage
 
+/**
+ * Displays a single tracked package with a toggle switch.
+ *
+ * Shows the app icon, name, description, and an on/off switch to enable/disable blocking.
+ *
+ * @param trackedPackage The package information to display
+ * @param onToggle Callback when the switch is toggled
+ * @param modifier Modifier for the root composable
+ */
 @Composable
 fun PackageToggleItem(
     trackedPackage: TrackedPackage,

@@ -33,6 +33,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.atick.shorts.models.TrackedPackage
 
+/**
+ * Displays a card containing all tracked packages with toggle switches.
+ *
+ * Groups all available packages in a single card with dividers between items.
+ *
+ * @param packages List of packages to display
+ * @param onPackageToggle Callback when a package is toggled (packageName, enabled)
+ * @param modifier Modifier for the root composable
+ */
 @Composable
 fun TrackedPackagesSection(
     packages: List<TrackedPackage>,

@@ -32,6 +32,13 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 
+/**
+ * Accessibility service that detects and blocks short-form content across supported apps.
+ *
+ * This service monitors accessibility events from tracked applications (YouTube, Instagram)
+ * and automatically performs a back action when short-form content (Shorts, Reels) is detected.
+ * Uses platform-specific detectors to identify when users are actively watching short-form content.
+ */
 @SuppressLint("AccessibilityPolicy")
 class ShortFormContentBlockerService : AccessibilityService() {
 
@@ -106,6 +113,11 @@ class ShortFormContentBlockerService : AccessibilityService() {
         Timber.w("ShortFormContentBlockerService interrupted")
     }
 
+    /**
+     * Handles detection of short-form content by performing a back navigation action.
+     *
+     * @param packageName The package name of the app where content was detected
+     */
     private fun handleShortFormContentDetected(packageName: String) {
         Timber.i("[$packageName] Handling short-form content detection - performing BACK action")
         val success = performGlobalAction(GLOBAL_ACTION_BACK)
@@ -116,6 +128,15 @@ class ShortFormContentBlockerService : AccessibilityService() {
         }
     }
 
+    /**
+     * Checks if an action should be performed based on cooldown period.
+     *
+     * Prevents repeated actions from being performed too frequently by enforcing
+     * a cooldown period of 1.5 seconds between actions.
+     *
+     * @param key Unique identifier for the action
+     * @return true if the action should be performed, false if still in cooldown
+     */
     private fun shouldPerformAction(key: String): Boolean {
         val now = SystemClock.uptimeMillis()
         val last = lastActionTimestamps[key] ?: 0L

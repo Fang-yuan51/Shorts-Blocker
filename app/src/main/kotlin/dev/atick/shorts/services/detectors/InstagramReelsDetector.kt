@@ -22,6 +22,16 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import timber.log.Timber
 
+/**
+ * Detector implementation for Instagram Reels.
+ *
+ * Identifies when users are actively watching Instagram Reels by checking:
+ * - Whether the Reels tab is selected and active
+ * - Presence of Reels-specific fragment containers
+ * - Active video playback indicators
+ *
+ * Distinguishes between Reels in the dedicated tab versus Stories or feed videos.
+ */
 class InstagramReelsDetector : ShortFormContentDetector {
 
     override fun getPackageName(): String = "com.instagram.android"
@@ -57,6 +67,18 @@ class InstagramReelsDetector : ShortFormContentDetector {
         }
     }
 
+    /**
+     * Checks if the user is currently in the Reels activity or tab.
+     *
+     * Uses multiple detection methods:
+     * 1. Selected Reels tab in bottom navigation
+     * 2. Reels fragment container presence
+     * 3. Activity/fragment class name analysis
+     *
+     * @param node Root accessibility node
+     * @param event Current accessibility event
+     * @return true if user is in Reels section
+     */
     private fun isInReelsActivity(node: AccessibilityNodeInfo, event: AccessibilityEvent): Boolean {
         // Method 1: Check for SELECTED Reels tab (not just present in bottom nav)
         val hasSelectedReelsTab = isReelsTabSelected(node)
@@ -91,6 +113,12 @@ class InstagramReelsDetector : ShortFormContentDetector {
         return inReelsSection
     }
 
+    /**
+     * Checks if the Reels tab in bottom navigation is selected.
+     *
+     * @param node Root accessibility node
+     * @return true if Reels tab is actively selected
+     */
     private fun isReelsTabSelected(node: AccessibilityNodeInfo): Boolean {
         // Look for a Reels tab/button that is SELECTED or ACTIVATED
         // Must be an actual clickable tab, not just text containing "Reels"
@@ -140,6 +168,15 @@ class InstagramReelsDetector : ShortFormContentDetector {
         return false
     }
 
+    /**
+     * Checks if there is active video playback in the Reels viewer.
+     *
+     * Looks for video player components, texture views, and surface views
+     * that indicate a Reel is currently being displayed.
+     *
+     * @param node Root accessibility node
+     * @return true if video playback indicators are found (requires at least 2 indicators)
+     */
     private fun hasActiveVideoPlayback(node: AccessibilityNodeInfo): Boolean {
         // Look for ANY significant indicator that we're in the Reels viewer
         val stack = ArrayDeque<AccessibilityNodeInfo>()
@@ -211,6 +248,13 @@ class InstagramReelsDetector : ShortFormContentDetector {
         return hasVideo
     }
 
+    /**
+     * Checks if any node in the tree has a view ID matching the given patterns.
+     *
+     * @param node Root accessibility node
+     * @param patterns List of string patterns to match against view IDs
+     * @return true if any pattern is found
+     */
     private fun hasViewIdPattern(node: AccessibilityNodeInfo, patterns: List<String>): Boolean {
         val stack = ArrayDeque<AccessibilityNodeInfo>()
         stack.add(node)

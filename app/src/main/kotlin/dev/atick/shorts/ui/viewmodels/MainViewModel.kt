@@ -32,12 +32,27 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
+/**
+ * UI state for the main screen.
+ *
+ * @property isGranted Whether accessibility service permission is granted
+ * @property isChecking Whether a permission check is in progress
+ * @property trackedPackages List of available packages with their enabled status
+ */
 data class ServiceState(
     val isGranted: Boolean = false,
     val isChecking: Boolean = false,
     val trackedPackages: List<TrackedPackage> = emptyList(),
 )
 
+/**
+ * ViewModel for the main screen.
+ *
+ * Manages accessibility service permission state, package tracking preferences,
+ * and coordinates with the settings screen for permission requests.
+ *
+ * @property application Application instance for context access
+ */
 class MainViewModel(
     application: Application,
 ) : AndroidViewModel(application) {
@@ -59,6 +74,9 @@ class MainViewModel(
         observeTrackedPackages()
     }
 
+    /**
+     * Observes tracked packages from preferences and updates UI state.
+     */
     private fun observeTrackedPackages() {
         viewModelScope.launch {
             userPreferencesProvider.getTrackedPackagesWithStatus().collect { packages ->

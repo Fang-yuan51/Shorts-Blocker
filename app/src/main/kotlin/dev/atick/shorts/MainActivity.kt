@@ -27,6 +27,12 @@ import dev.atick.shorts.ui.screens.MainScreen
 import dev.atick.shorts.ui.theme.ShortsBlockerTheme
 import timber.log.Timber
 
+/**
+ * Main activity that hosts the app's UI.
+ *
+ * Displays the main screen where users can enable the accessibility service
+ * and manage which apps to track for short-form content blocking.
+ */
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

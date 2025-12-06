@@ -18,10 +18,17 @@ package dev.atick.shorts.utils
 
 import dev.atick.shorts.models.TrackedPackage
 
+/**
+ * Constants for supported app packages and their default configurations.
+ */
 object PackageConstants {
+    /** YouTube app package identifier */
     const val YOUTUBE_PACKAGE = "com.google.android.youtube"
+
+    /** Instagram app package identifier */
     const val INSTAGRAM_PACKAGE = "com.instagram.android"
 
+    /** List of all available packages that can be tracked */
     val AVAILABLE_PACKAGES = listOf(
         TrackedPackage(
             packageName = YOUTUBE_PACKAGE,
@@ -37,6 +44,7 @@ object PackageConstants {
         ),
     )
 
+    /** List of package names that are enabled by default */
     val DEFAULT_ENABLED_PACKAGES = AVAILABLE_PACKAGES
         .filter { it.isEnabled }
         .map { it.packageName }

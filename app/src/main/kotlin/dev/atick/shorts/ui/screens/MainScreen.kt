@@ -68,7 +68,11 @@ import timber.log.Timber
 
 /**
  * Main screen with ViewModel integration.
- * This is the primary entry point for the app UI.
+ *
+ * This is the primary entry point for the app UI. Observes lifecycle events
+ * to check accessibility service status when the screen resumes.
+ *
+ * @param viewModel ViewModel managing service state and user preferences
  */
 @Composable
 fun MainScreen(
@@ -114,7 +118,15 @@ fun MainScreen(
 
 /**
  * Pure presentation layer for main screen.
+ *
  * Use this for testing or when you want to manage state externally.
+ * Shows either service active status or setup instructions based on permission state.
+ *
+ * @param isPermissionGranted Whether accessibility service permission is granted
+ * @param modifier Modifier for the root composable
+ * @param trackedPackages List of packages with their enabled status
+ * @param onOpenSettings Callback when user taps to open accessibility settings
+ * @param onPackageToggle Callback when user toggles package blocking (packageName, enabled)
  */
 @Composable
 fun MainScreenContent(
@@ -149,6 +161,15 @@ fun MainScreenContent(
     }
 }
 
+/**
+ * Displays the active service status with tracked packages.
+ *
+ * Shows an animated loading indicator with check icon and a list
+ * of tracked apps that users can toggle on/off.
+ *
+ * @param trackedPackages List of packages with their enabled status
+ * @param onPackageToggle Callback when user toggles package blocking
+ */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ServiceActiveContent(
@@ -249,6 +270,13 @@ private fun ServiceActiveContent(
     }
 }
 
+/**
+ * Displays setup instructions when accessibility service is not enabled.
+ *
+ * Shows step-by-step instructions and a button to open accessibility settings.
+ *
+ * @param onOpenSettings Callback when user taps to open accessibility settings
+ */
 @Composable
 private fun SetupRequiredContent(
     onOpenSettings: () -> Unit,
@@ -371,6 +399,13 @@ private fun SetupRequiredContent(
     }
 }
 
+/**
+ * Displays a title-value pair in the info card.
+ *
+ * @param title The label text
+ * @param value The value text
+ * @param valueColor Color for the value text
+ */
 @Composable
 private fun InfoRow(
     title: String,
@@ -393,6 +428,12 @@ private fun InfoRow(
     }
 }
 
+/**
+ * Displays a numbered instruction step.
+ *
+ * @param number Step number as a string
+ * @param text Instruction text
+ */
 @Composable
 private fun InstructionStep(
     number: String,
