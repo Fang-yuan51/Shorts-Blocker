@@ -152,5 +152,5 @@ dependencies {
     dokkaPlugin(libs.dokka.android.plugin)
     dokkaPlugin(libs.dokka.mermaid.plugin)
 
-    debugImplementation(libs.timber.logging)
+    implementation(libs.timber.logging)
 }
