@@ -33,7 +33,6 @@ class YouTubeShortsDetector : ShortFormContentDetector {
     ): Boolean {
         var hasPlayerIndicator = false
         var isFullScreen = false
-        var hasPlayerControls = false
 
         val rect = Rect()
         rootNode.getBoundsInScreen(rect)
@@ -42,7 +41,7 @@ class YouTubeShortsDetector : ShortFormContentDetector {
         val screenHeight = displayMetrics.heightPixels
         val screenWidth = displayMetrics.widthPixels
 
-        Timber.v("[YouTube] Container bounds: ${rect.width()}x${rect.height()}, Screen: ${screenWidth}x${screenHeight}")
+        Timber.v("[YouTube] Container bounds: ${rect.width()}x${rect.height()}, Screen: ${screenWidth}x$screenHeight")
 
         // 1) Exclude small containers (thumbnails, shelf items)
         if (rect.height() < 400 || rect.width() < 300) {
@@ -89,17 +88,16 @@ class YouTubeShortsDetector : ShortFormContentDetector {
         // 4) Look for video player controls (stronger indicator)
         if (isFullScreen && hasVideoPlayerControls(rootNode)) {
             Timber.d("[YouTube] Video player controls detected in full-screen container")
-            hasPlayerControls = true
             hasPlayerIndicator = true
         }
 
         // 5) Require FULL-SCREEN + (PLAYER_INDICATOR or PLAYER_CONTROLS)
-        val isActuallyWatchingShorts = isFullScreen && (hasPlayerIndicator || hasPlayerControls)
+        val isActuallyWatchingShorts = isFullScreen && (hasPlayerIndicator)
 
         if (isActuallyWatchingShorts) {
             Timber.i("[YouTube] ✓ User is actively watching Shorts in full-screen")
         } else {
-            Timber.v("[YouTube] ✗ Not watching Shorts: fullScreen=$isFullScreen, playerIndicator=$hasPlayerIndicator, controls=$hasPlayerControls")
+            Timber.v("[YouTube] ✗ Not watching Shorts: fullScreen=$isFullScreen, playerIndicator=$hasPlayerIndicator")
         }
 
         return isActuallyWatchingShorts
@@ -114,15 +112,23 @@ class YouTubeShortsDetector : ShortFormContentDetector {
         val playerControlIds = listOf(
             "player_control",
             "play_pause",
-            "progress", "seek", "seekbar",
+            "progress",
+            "seek",
+            "seekbar",
             "video_surface",
             "exo_player",
             "media_controller",
         )
 
         val excludedIds = listOf(
-            "shelf", "grid", "chip", "tab",
-            "thumbnail", "preview", "feed", "recycler",
+            "shelf",
+            "grid",
+            "chip",
+            "tab",
+            "thumbnail",
+            "preview",
+            "feed",
+            "recycler",
         )
 
         while (stack.isNotEmpty()) {
@@ -162,7 +168,12 @@ class YouTubeShortsDetector : ShortFormContentDetector {
             val desc = n.contentDescription?.toString()
             if (!desc.isNullOrBlank() && desc.length > 15) {
                 if ((desc.contains("playing", true) || desc.contains("paused", true)) &&
-                    (desc.contains("video", true) || desc.contains("short", true) || desc.contains("reel", true))
+                    (
+                        desc.contains("video", true) || desc.contains(
+                            "short",
+                            true,
+                        ) || desc.contains("reel", true)
+                        )
                 ) {
                     Timber.d("[YouTube] Video playback state description found: $desc")
                     foundPlayerControls++

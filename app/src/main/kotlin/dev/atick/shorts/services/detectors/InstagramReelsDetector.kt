@@ -33,13 +33,13 @@ class InstagramReelsDetector : ShortFormContentDetector {
     ): Boolean {
         // Instagram uses clips_viewer for everything, so we need to be very specific
         // Check if we're in the Reels tab/activity specifically
-        
+
         val className = event.className?.toString()
         Timber.v("[Instagram] Event className: $className")
 
         // Check if this is specifically a Reels fragment/activity
         val isReelsActivity = isInReelsActivity(rootNode, event)
-        
+
         if (!isReelsActivity) {
             Timber.v("[Instagram] Not in Reels activity/tab - allowing")
             return false
@@ -47,7 +47,7 @@ class InstagramReelsDetector : ShortFormContentDetector {
 
         // If we're in the Reels section, check for actual video playback
         val hasActiveVideo = hasActiveVideoPlayback(rootNode)
-        
+
         if (hasActiveVideo) {
             Timber.i("[Instagram] ✓ User is actively watching Reels in Reels tab")
             return true
@@ -67,7 +67,11 @@ class InstagramReelsDetector : ShortFormContentDetector {
         // Method 2: Check for clips_fragment_container (indicates we're IN the Reels viewer)
         val hasReelsFragmentContainer = hasViewIdPattern(
             node,
-            listOf("clips_fragment_container", "clips_tab_container", "clips_viewer_fragment_container")
+            listOf(
+                "clips_fragment_container",
+                "clips_tab_container",
+                "clips_viewer_fragment_container",
+            ),
         )
         if (hasReelsFragmentContainer) {
             Timber.d("[Instagram] Found Reels fragment container - in Reels viewer")
@@ -83,7 +87,7 @@ class InstagramReelsDetector : ShortFormContentDetector {
 
         val inReelsSection = hasSelectedReelsTab || hasReelsFragmentContainer || isReelsClass
         Timber.v("[Instagram] isInReelsActivity = $inReelsSection (selectedTab=$hasSelectedReelsTab, container=$hasReelsFragmentContainer, class=$isReelsClass)")
-        
+
         return inReelsSection
     }
 
@@ -99,27 +103,27 @@ class InstagramReelsDetector : ShortFormContentDetector {
             nodesScanned++
 
             val id = n.viewIdResourceName
-            
+
             // ONLY check nodes that are explicitly tab IDs (not any text/description)
             val isTabNode = id != null && (
                 id.contains("clips_tab", ignoreCase = true) ||
-                id.contains("reels_tab", ignoreCase = true) ||
-                id.contains("tab_button", ignoreCase = true) ||
-                id.contains("navigation_bar_item", ignoreCase = true)
-            )
+                    id.contains("reels_tab", ignoreCase = true) ||
+                    id.contains("tab_button", ignoreCase = true) ||
+                    id.contains("navigation_bar_item", ignoreCase = true)
+                )
 
             if (isTabNode) {
                 val text = n.text?.toString()
                 val desc = n.contentDescription?.toString()
-                
+
                 // Verify it's the Reels tab (by text/description)
                 val hasReelsLabel = (text != null && text.equals("Reels", ignoreCase = true)) ||
                     (desc != null && desc.contains("Reels", ignoreCase = true))
-                
+
                 if (hasReelsLabel) {
                     // Check if it's selected/activated
-                    if (n.isSelected || n.isChecked) {
-                        Timber.d("[Instagram] Found SELECTED Reels TAB: selected=${n.isSelected}, checked=${n.isChecked}, id=$id, desc=$desc")
+                    if (n.isSelected) {
+                        Timber.d("[Instagram] Found SELECTED Reels TAB: selected=${n.isSelected}, id=$id, desc=$desc")
                         return true
                     } else {
                         Timber.v("[Instagram] Found Reels tab but NOT selected: id=$id")
@@ -152,7 +156,7 @@ class InstagramReelsDetector : ShortFormContentDetector {
             "clips_media_view",
             "video_view",
             "texture_view", // Video rendering surface
-            "surface_view",  // Video rendering surface
+            "surface_view", // Video rendering surface
         )
 
         while (stack.isNotEmpty() && nodesScanned < 100) {
@@ -207,33 +211,6 @@ class InstagramReelsDetector : ShortFormContentDetector {
         return hasVideo
     }
 
-    private fun findNodeWithText(node: AccessibilityNodeInfo, searchText: String): AccessibilityNodeInfo? {
-        val stack = ArrayDeque<AccessibilityNodeInfo>()
-        stack.add(node)
-        var nodesScanned = 0
-
-        while (stack.isNotEmpty() && nodesScanned < 100) {
-            val n = stack.removeFirst()
-            nodesScanned++
-
-            val text = n.text?.toString()
-            if (text != null && text.equals(searchText, ignoreCase = true)) {
-                return n
-            }
-
-            val desc = n.contentDescription?.toString()
-            if (desc != null && desc.contains(searchText, ignoreCase = true)) {
-                return n
-            }
-
-            for (i in 0 until n.childCount) {
-                n.getChild(i)?.let { stack.add(it) }
-            }
-        }
-
-        return null
-    }
-
     private fun hasViewIdPattern(node: AccessibilityNodeInfo, patterns: List<String>): Boolean {
         val stack = ArrayDeque<AccessibilityNodeInfo>()
         stack.add(node)
@@ -261,4 +238,3 @@ class InstagramReelsDetector : ShortFormContentDetector {
         return false
     }
 }
-

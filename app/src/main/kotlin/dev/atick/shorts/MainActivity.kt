@@ -50,4 +50,3 @@ class MainActivity : ComponentActivity() {
         Timber.d("MainActivity onResume")
     }
 }
-
