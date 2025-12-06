@@ -32,14 +32,14 @@ import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 
 @SuppressLint("AccessibilityPolicy")
-class ShortsAccessibilityService : AccessibilityService() {
+class ShortFormContentBlockerService : AccessibilityService() {
 
     private val lastActionTimestamps = ConcurrentHashMap<String, Long>()
-    private val actionCooldownMillis = 1500L // rate-limit actions
+    private val actionCooldownMillis = 1500L
     private val userPreferencesProvider = UserPreferencesProvider(applicationContext)
 
     override fun onServiceConnected() {
-        Timber.d("ShortsAccessibilityService connected")
+        Timber.d("ShortFormContentBlockerService connected")
 
         CoroutineScope(Dispatchers.IO).launch {
             val packages = userPreferencesProvider.getTrackedPackages().first()
@@ -54,7 +54,7 @@ class ShortsAccessibilityService : AccessibilityService() {
                 notificationTimeout = 100
             }
             serviceInfo = info
-            Timber.d("AccessibilityServiceInfo configured for YouTube")
+            Timber.d("AccessibilityServiceInfo configured for tracked packages: ${packages.joinToString()}")
         }
     }
 
@@ -63,16 +63,15 @@ class ShortsAccessibilityService : AccessibilityService() {
 
         Timber.v("Accessibility event: type=${event.eventType}, className=${event.className}, package=${event.packageName}")
 
-        // Prefer window-based inspection (more reliable)
-        val windows = windows // AccessibilityService.getWindows()
+        val windows = windows
         Timber.v("Inspecting ${windows.size} windows")
         for (win in windows) {
             val root = win.root ?: continue
-            if (isShortsView(root)) {
-                Timber.i("Shorts view detected")
-                val key = "shorts_detected"
+            if (isShortFormContent(root)) {
+                Timber.i("Short-form content detected")
+                val key = "content_detected"
                 if (shouldPerformAction(key)) {
-                    handleShortsDetected(root)
+                    handleShortFormContentDetected(root)
                 } else {
                     Timber.d("Action skipped due to cooldown")
                 }
@@ -82,10 +81,10 @@ class ShortsAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        Timber.w("ShortsAccessibilityService interrupted")
+        Timber.w("ShortFormContentBlockerService interrupted")
     }
 
-    private fun isShortsView(node: AccessibilityNodeInfo): Boolean {
+    private fun isShortFormContent(node: AccessibilityNodeInfo): Boolean {
         var hasShortIndicator = false
         var hasVerticalVideo = false
 
@@ -190,7 +189,7 @@ class ShortsAccessibilityService : AccessibilityService() {
         return hasPattern
     }
 
-    private fun handleShortsDetected(root: AccessibilityNodeInfo) {
+    private fun handleShortFormContentDetected(root: AccessibilityNodeInfo) {
         Timber.i("Handling short-form content detection - performing BACK action")
         val success = performGlobalAction(GLOBAL_ACTION_BACK)
         if (success) {

@@ -42,7 +42,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".services.ShortsAccessibilityService"
+            android:name=".services.ShortFormContentBlockerService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
             android:exported="true"
             tools:ignore="AccessibilityPolicy">

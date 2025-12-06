@@ -42,7 +42,7 @@ class AccessibilityPermissionViewModel(
 
     companion object {
         private const val SERVICE_NAME: String =
-            "dev.atick.shorts/dev.atick.shorts.services.ShortsAccessibilityService"
+            "dev.atick.shorts/dev.atick.shorts.services.ShortFormContentBlockerService"
     }
 
     private val userPreferencesProvider = UserPreferencesProvider(application)
