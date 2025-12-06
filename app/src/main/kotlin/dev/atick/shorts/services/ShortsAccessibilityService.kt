@@ -45,11 +45,11 @@ class ShortsAccessibilityService : AccessibilityService() {
             val packages = userPreferencesProvider.getTrackedPackages().first()
             val info = AccessibilityServiceInfo().apply {
                 eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
-                        AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or
-                        AccessibilityEvent.TYPE_VIEW_SCROLLED
+                    AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or
+                    AccessibilityEvent.TYPE_VIEW_SCROLLED
                 feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
                 flags = AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS or
-                        AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
+                    AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
                 packageNames = packages.toTypedArray()
                 notificationTimeout = 100
             }
@@ -92,11 +92,11 @@ class ShortsAccessibilityService : AccessibilityService() {
         // 1) check view-id patterns for shorts/reels player container
         val viewId = node.viewIdResourceName
         if (viewId != null && (
-                    viewId.contains("shorts", ignoreCase = true) ||
-                            viewId.contains("reel", ignoreCase = true) ||
-                            viewId.contains("short_player", ignoreCase = true) ||
-                            viewId.contains("clips", ignoreCase = true)
-                    )
+                viewId.contains("shorts", ignoreCase = true) ||
+                    viewId.contains("reel", ignoreCase = true) ||
+                    viewId.contains("short_player", ignoreCase = true) ||
+                    viewId.contains("clips", ignoreCase = true)
+                )
         ) {
             Timber.d("Short-form content indicator found in view ID: $viewId")
             hasShortIndicator = true
@@ -168,10 +168,12 @@ class ShortsAccessibilityService : AccessibilityService() {
             val desc = n.contentDescription?.toString()
             if (!desc.isNullOrBlank() && desc.length > 20) {
                 if ((desc.contains("Shorts", true) || desc.contains("Reel", true)) &&
-                    (desc.contains("video", true) || desc.contains(
-                        "playing",
-                        true,
-                    ) || desc.contains("paused", true))
+                    (
+                        desc.contains("video", true) || desc.contains(
+                            "playing",
+                            true,
+                        ) || desc.contains("paused", true)
+                        )
                 ) {
                     Timber.d("Short-form content video description found: $desc")
                     foundShortFormIndicators++

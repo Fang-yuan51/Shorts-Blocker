@@ -70,8 +70,8 @@ fun AccessibilityPermissionScreen(
     val permissionState by viewModel.permissionState.collectAsState()
 
     AccessibilityPermissionContent(
-        modifier = modifier,
         isPermissionGranted = permissionState.isGranted,
+        modifier = modifier,
         trackedPackages = permissionState.trackedPackages,
         onOpenSettings = { viewModel.openAccessibilitySettings() },
         onPackageToggle = { packageName, enabled ->
@@ -86,10 +86,10 @@ fun AccessibilityPermissionScreen(
  */
 @Composable
 fun AccessibilityPermissionContent(
-    modifier: Modifier = Modifier,
     isPermissionGranted: Boolean,
+    modifier: Modifier = Modifier,
     trackedPackages: List<dev.atick.shorts.models.TrackedPackage> = emptyList(),
-    onOpenSettings: () -> Unit,
+    onOpenSettings: () -> Unit = {},
     onPackageToggle: (String, Boolean) -> Unit = { _, _ -> },
 ) {
     Surface(
@@ -422,7 +422,6 @@ private fun PermissionGrantedPreview() {
                     isEnabled = false,
                 ),
             ),
-            onOpenSettings = {},
         )
     }
 }
@@ -433,7 +432,6 @@ private fun PermissionRequiredPreview() {
     MaterialTheme {
         AccessibilityPermissionContent(
             isPermissionGranted = false,
-            onOpenSettings = {},
         )
     }
 }

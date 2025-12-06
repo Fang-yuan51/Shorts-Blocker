@@ -20,24 +20,23 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import dev.atick.shorts.ui.screens.AccessibilityPermissionScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.atick.shorts.ui.screens.AccessibilityPermissionContent
 import dev.atick.shorts.ui.theme.ShortsBlockerTheme
-import dev.atick.shorts.ui.viewmodels.AccessibilityPermissionViewModel
 import timber.log.Timber
 
 class MainActivity : ComponentActivity() {
-
-    private val viewModel: AccessibilityPermissionViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,9 +56,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    AccessibilityPermissionScreenWithLifecycle(
-                        viewModel = viewModel,
-                    )
+                    AccessibilityPermissionScreenWithLifecycle()
                 }
             }
         }
@@ -68,7 +65,6 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         Timber.d("MainActivity onResume")
-        viewModel.onResume()
     }
 }
 
@@ -77,10 +73,9 @@ class MainActivity : ComponentActivity() {
  * This ensures permission is rechecked when the app resumes.
  */
 @Composable
-private fun AccessibilityPermissionScreenWithLifecycle(
-    viewModel: AccessibilityPermissionViewModel,
-) {
+private fun AccessibilityPermissionScreenWithLifecycle(viewModel: AccessibilityPermissionViewModel = viewModel()) {
     val lifecycleOwner = LocalLifecycleOwner.current
+    val permissionState by viewModel.permissionState.collectAsState()
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -106,5 +101,12 @@ private fun AccessibilityPermissionScreenWithLifecycle(
         }
     }
 
-    AccessibilityPermissionScreen(viewModel = viewModel)
+    AccessibilityPermissionContent(
+        isPermissionGranted = permissionState.isGranted,
+        trackedPackages = permissionState.trackedPackages,
+        onOpenSettings = { viewModel.openAccessibilitySettings() },
+        onPackageToggle = { packageName, enabled ->
+            viewModel.togglePackageTracking(packageName, enabled)
+        },
+    )
 }
