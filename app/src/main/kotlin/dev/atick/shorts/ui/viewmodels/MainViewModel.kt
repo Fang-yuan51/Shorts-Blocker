@@ -17,6 +17,7 @@
 package dev.atick.shorts.ui.viewmodels
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.atick.shorts.models.TrackedPackage
@@ -26,6 +27,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -54,22 +56,18 @@ class MainViewModel(
 
     init {
         Timber.d("MainViewModel initialized")
-        initializePreferences()
-        checkPermission()
         observeTrackedPackages()
-    }
-
-    private fun initializePreferences() {
-        viewModelScope.launch {
-            userPreferencesProvider.initializeDefaultPackages()
-        }
     }
 
     private fun observeTrackedPackages() {
         viewModelScope.launch {
             userPreferencesProvider.getTrackedPackagesWithStatus().collect { packages ->
-                Timber.d("Tracked packages updated: ${packages.filter { it.isEnabled }.map { it.displayName }}")
-                _serviceState.value = _serviceState.value.copy(trackedPackages = packages)
+                Timber.d(
+                    "Tracked packages updated: ${
+                        packages.filter { it.isEnabled }.map { it.displayName }
+                    }",
+                )
+                _serviceState.update { it.copy(trackedPackages = packages) }
             }
         }
     }
@@ -78,20 +76,22 @@ class MainViewModel(
      * Check accessibility service status.
      * This is called automatically on lifecycle resume and periodically.
      */
-    fun checkPermission() {
+    fun checkPermission(context: Context) {
         viewModelScope.launch {
             Timber.d("Checking accessibility service status")
-            _serviceState.value = _serviceState.value.copy(isChecking = true)
+            _serviceState.update { it.copy(isChecking = true) }
 
             val isGranted = AccessibilityServiceManager.isAccessibilityServiceEnabled(
-                getApplication(),
+                context,
                 SERVICE_NAME,
             )
 
-            _serviceState.value = ServiceState(
-                isGranted = isGranted,
-                isChecking = false,
-            )
+            _serviceState.update {
+                it.copy(
+                    isGranted = isGranted,
+                    isChecking = false,
+                )
+            }
 
             Timber.i("Service check complete: isGranted=$isGranted")
         }
@@ -101,17 +101,17 @@ class MainViewModel(
      * Open Android accessibility settings page.
      * Automatically starts monitoring for service status changes.
      */
-    fun openAccessibilitySettings() {
+    fun openAccessibilitySettings(context: Context) {
         Timber.d("Opening accessibility settings")
-        AccessibilityServiceManager.openAccessibilitySettings(getApplication())
-        startMonitoring()
+        AccessibilityServiceManager.openAccessibilitySettings(context)
+        startMonitoring(context)
     }
 
     /**
      * Start monitoring permission changes when user goes to settings.
      * Checks every 1 second while monitoring is active.
      */
-    private fun startMonitoring() {
+    private fun startMonitoring(context: Context) {
         if (isMonitoring) {
             Timber.v("Already monitoring permission changes")
             return
@@ -123,7 +123,7 @@ class MainViewModel(
         viewModelScope.launch {
             while (isActive && isMonitoring) {
                 delay(1000L)
-                checkPermission()
+                checkPermission(context)
 
                 // Stop monitoring if service is enabled
                 if (_serviceState.value.isGranted) {
@@ -147,9 +147,9 @@ class MainViewModel(
      * Called when app resumes from background.
      * Performs a fresh permission check.
      */
-    fun onResume() {
+    fun onResume(context: Context) {
         Timber.d("ViewModel onResume - checking permission")
-        checkPermission()
+        checkPermission(context)
     }
 
     /**

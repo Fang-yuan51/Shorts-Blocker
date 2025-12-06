@@ -46,17 +46,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.atick.shorts.models.TrackedPackage
+import dev.atick.shorts.ui.components.TrackedPackagesSection
 import dev.atick.shorts.ui.viewmodels.MainViewModel
+import timber.log.Timber
 
 /**
  * Main screen with ViewModel integration.
@@ -64,16 +72,40 @@ import dev.atick.shorts.ui.viewmodels.MainViewModel
  */
 @Composable
 fun MainScreen(
-    modifier: Modifier = Modifier,
     viewModel: MainViewModel = viewModel(),
 ) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val serviceState by viewModel.serviceState.collectAsState()
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> {
+                    Timber.d("Lifecycle ON_RESUME - checking service status")
+                    viewModel.onResume(context)
+                }
+
+                Lifecycle.Event.ON_PAUSE -> {
+                    Timber.d("Lifecycle ON_PAUSE")
+                }
+
+                else -> {}
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            Timber.d("Removing lifecycle observer")
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     MainScreenContent(
         isPermissionGranted = serviceState.isGranted,
-        modifier = modifier,
         trackedPackages = serviceState.trackedPackages,
-        onOpenSettings = { viewModel.openAccessibilitySettings() },
+        onOpenSettings = { viewModel.openAccessibilitySettings(context) },
         onPackageToggle = { packageName, enabled ->
             viewModel.togglePackageTracking(packageName, enabled)
         },
@@ -88,7 +120,7 @@ fun MainScreen(
 fun MainScreenContent(
     isPermissionGranted: Boolean,
     modifier: Modifier = Modifier,
-    trackedPackages: List<dev.atick.shorts.models.TrackedPackage> = emptyList(),
+    trackedPackages: List<TrackedPackage> = emptyList(),
     onOpenSettings: () -> Unit = {},
     onPackageToggle: (String, Boolean) -> Unit = { _, _ -> },
 ) {
@@ -120,7 +152,7 @@ fun MainScreenContent(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ServiceActiveContent(
-    trackedPackages: List<dev.atick.shorts.models.TrackedPackage> = emptyList(),
+    trackedPackages: List<TrackedPackage> = emptyList(),
     onPackageToggle: (String, Boolean) -> Unit = { _, _ -> },
 ) {
     AnimatedVisibility(
@@ -209,7 +241,7 @@ private fun ServiceActiveContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            dev.atick.shorts.ui.components.TrackedPackagesSection(
+            TrackedPackagesSection(
                 packages = trackedPackages,
                 onPackageToggle = onPackageToggle,
             )
@@ -409,13 +441,13 @@ private fun ServiceActivePreview() {
         MainScreenContent(
             isPermissionGranted = true,
             trackedPackages = listOf(
-                dev.atick.shorts.models.TrackedPackage(
+                TrackedPackage(
                     packageName = "com.google.android.youtube",
                     displayName = "YouTube",
                     description = "Block YouTube Shorts",
                     isEnabled = true,
                 ),
-                dev.atick.shorts.models.TrackedPackage(
+                TrackedPackage(
                     packageName = "com.instagram.android",
                     displayName = "Instagram",
                     description = "Block Instagram Reels",
