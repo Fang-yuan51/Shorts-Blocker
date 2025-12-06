@@ -133,5 +133,8 @@ dependencies {
     implementation(libs.androidx.compose.material.icons)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
+    implementation(libs.androidx.dataStore.core)
+    implementation(libs.androidx.dataStore.preferences)
+
     debugImplementation(libs.timber.logging)
 }

@@ -10,6 +10,7 @@ dokka = "2.1.0"
 dokkaMermaid = "0.6.0"
 googleOss = "17.3.0"
 googleOssPlugin = "0.10.9"
+androidxDataStore = "1.2.0"
 timber = "5.0.1"
 
 [libraries]
@@ -27,6 +28,8 @@ androidx-compose-material-icons = { group = "androidx.compose.material", name = 
 google-oss-licenses = { group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "googleOss" }
 dokka-android-plugin = { module = "org.jetbrains.dokka:android-documentation-plugin", version.ref = "dokka" }
 dokka-mermaid-plugin = { module = "com.glureau:html-mermaid-dokka-plugin", version.ref = "dokkaMermaid" }
+androidx-dataStore-core = { group = "androidx.datastore", name = "datastore", version.ref = "androidxDataStore" }
+androidx-dataStore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidxDataStore" }
 timber-logging = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
 [plugins]

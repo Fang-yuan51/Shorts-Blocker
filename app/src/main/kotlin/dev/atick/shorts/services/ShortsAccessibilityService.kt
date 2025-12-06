@@ -23,6 +23,11 @@ import android.graphics.Rect
 import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import dev.atick.shorts.utils.UserPreferencesProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 
@@ -31,21 +36,26 @@ class ShortsAccessibilityService : AccessibilityService() {
 
     private val lastActionTimestamps = ConcurrentHashMap<String, Long>()
     private val actionCooldownMillis = 1500L // rate-limit actions
+    private val userPreferencesProvider = UserPreferencesProvider(applicationContext)
 
     override fun onServiceConnected() {
         Timber.d("ShortsAccessibilityService connected")
-        val info = AccessibilityServiceInfo().apply {
-            eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
-                AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or
-                AccessibilityEvent.TYPE_VIEW_SCROLLED
-            feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
-            flags = AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS or
-                AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
-            packageNames = arrayOf("com.google.android.youtube")
-            notificationTimeout = 100
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val packages = userPreferencesProvider.getTrackedPackages().first()
+            val info = AccessibilityServiceInfo().apply {
+                eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
+                        AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or
+                        AccessibilityEvent.TYPE_VIEW_SCROLLED
+                feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
+                flags = AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS or
+                        AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
+                packageNames = packages.toTypedArray()
+                notificationTimeout = 100
+            }
+            serviceInfo = info
+            Timber.d("AccessibilityServiceInfo configured for YouTube")
         }
-        serviceInfo = info
-        Timber.d("AccessibilityServiceInfo configured for YouTube")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -84,10 +94,11 @@ class ShortsAccessibilityService : AccessibilityService() {
         // 1) check view-id patterns specifically for shorts player/reels container
         val viewId = node.viewIdResourceName
         if (viewId != null && (
-            viewId.contains("shorts", ignoreCase = true) ||
-            viewId.contains("reel", ignoreCase = true) ||
-            viewId.contains("short_player", ignoreCase = true)
-        )) {
+                    viewId.contains("shorts", ignoreCase = true) ||
+                            viewId.contains("reel", ignoreCase = true) ||
+                            viewId.contains("short_player", ignoreCase = true)
+                    )
+        ) {
             Timber.d("Shorts indicator found in view ID: $viewId")
             hasShortIndicator = true
         }
@@ -137,7 +148,7 @@ class ShortsAccessibilityService : AccessibilityService() {
             "reel_dyn_remix",
             "shorts_comment",
             "shorts_like_button",
-            "reel_pivot_button"
+            "reel_pivot_button",
         )
 
         while (stack.isNotEmpty()) {
@@ -162,7 +173,11 @@ class ShortsAccessibilityService : AccessibilityService() {
             val desc = n.contentDescription?.toString()
             if (!desc.isNullOrBlank() && desc.length > 20) { // Avoid short tab labels
                 if (desc.contains("Shorts", true) &&
-                    (desc.contains("video", true) || desc.contains("playing", true) || desc.contains("paused", true))) {
+                    (desc.contains("video", true) || desc.contains(
+                        "playing",
+                        true,
+                    ) || desc.contains("paused", true))
+                ) {
                     Timber.d("Shorts video description found: $desc")
                     foundShortsIndicators++
                 }
