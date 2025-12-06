@@ -60,9 +60,8 @@ class ShortsAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
-        if (event.packageName != "com.google.android.youtube") return
 
-        Timber.v("Accessibility event: type=${event.eventType}, className=${event.className}")
+        Timber.v("Accessibility event: type=${event.eventType}, className=${event.className}, package=${event.packageName}")
 
         // Prefer window-based inspection (more reliable)
         val windows = windows // AccessibilityService.getWindows()
@@ -87,19 +86,19 @@ class ShortsAccessibilityService : AccessibilityService() {
     }
 
     private fun isShortsView(node: AccessibilityNodeInfo): Boolean {
-        // More precise detection to avoid false positives
         var hasShortIndicator = false
         var hasVerticalVideo = false
 
-        // 1) check view-id patterns specifically for shorts player/reels container
+        // 1) check view-id patterns for shorts/reels player container
         val viewId = node.viewIdResourceName
         if (viewId != null && (
                     viewId.contains("shorts", ignoreCase = true) ||
                             viewId.contains("reel", ignoreCase = true) ||
-                            viewId.contains("short_player", ignoreCase = true)
+                            viewId.contains("short_player", ignoreCase = true) ||
+                            viewId.contains("clips", ignoreCase = true)
                     )
         ) {
-            Timber.d("Shorts indicator found in view ID: $viewId")
+            Timber.d("Short-form content indicator found in view ID: $viewId")
             hasShortIndicator = true
         }
 
@@ -108,39 +107,36 @@ class ShortsAccessibilityService : AccessibilityService() {
         node.getBoundsInScreen(rect)
         val aspect = if (rect.width() == 0) 0f else rect.height().toFloat() / rect.width()
 
-        // More strict aspect ratio and size check to avoid false positives
         if (aspect > 1.7f && rect.height() > 800) {
             Timber.v("Vertical container found with aspect ratio: $aspect, height: ${rect.height()}")
             hasVerticalVideo = true
 
-            // Check for shorts-specific UI patterns
-            if (hasShortsUiPattern(node)) {
-                Timber.d("Shorts UI pattern confirmed in vertical container")
+            if (hasShortFormUiPattern(node)) {
+                Timber.d("Short-form content UI pattern confirmed in vertical container")
                 hasShortIndicator = true
             }
         }
 
-        // Require BOTH vertical video layout AND shorts-specific indicators
-        val isShortsScreen = hasVerticalVideo && hasShortIndicator
+        // Require BOTH vertical video layout AND short-form content indicators
+        val isShortFormContent = hasVerticalVideo && hasShortIndicator
 
-        if (isShortsScreen) {
-            Timber.i("Shorts screen confirmed with both indicators")
+        if (isShortFormContent) {
+            Timber.i("Short-form content screen confirmed with both indicators")
         } else {
-            Timber.v("Not Shorts: hasVerticalVideo=$hasVerticalVideo, hasShortIndicator=$hasShortIndicator")
+            Timber.v("Not short-form content: hasVerticalVideo=$hasVerticalVideo, hasShortIndicator=$hasShortIndicator")
         }
 
-        return isShortsScreen
+        return isShortFormContent
     }
 
-    private fun hasShortsUiPattern(node: AccessibilityNodeInfo): Boolean {
-        // Scan for specific Shorts player UI elements, avoiding navigation tabs
+    private fun hasShortFormUiPattern(node: AccessibilityNodeInfo): Boolean {
         val stack = ArrayDeque<AccessibilityNodeInfo>()
         stack.add(node)
         var nodesScanned = 0
-        var foundShortsIndicators = 0
+        var foundShortFormIndicators = 0
 
-        // Look for specific Shorts player elements
-        val shortsPlayerIds = listOf(
+        // Look for short-form content player elements (Shorts, Reels, etc.)
+        val shortFormPlayerIds = listOf(
             "shorts_player",
             "reel_player",
             "shorts_video",
@@ -149,37 +145,36 @@ class ShortsAccessibilityService : AccessibilityService() {
             "shorts_comment",
             "shorts_like_button",
             "reel_pivot_button",
+            "clips_viewer",
+            "clips_player",
         )
 
         while (stack.isNotEmpty()) {
             val n = stack.removeFirst()
             nodesScanned++
 
-            // Limit scan depth to avoid performance issues
             if (nodesScanned > 100) break
 
             val id = n.viewIdResourceName
             if (id != null) {
-                // Check for specific Shorts player component IDs
-                for (playerId in shortsPlayerIds) {
+                for (playerId in shortFormPlayerIds) {
                     if (id.contains(playerId, ignoreCase = true)) {
-                        Timber.d("Shorts player component found: $id")
-                        foundShortsIndicators++
+                        Timber.d("Short-form content player component found: $id")
+                        foundShortFormIndicators++
                     }
                 }
             }
 
-            // Check content description for player-specific patterns (not tab labels)
             val desc = n.contentDescription?.toString()
-            if (!desc.isNullOrBlank() && desc.length > 20) { // Avoid short tab labels
-                if (desc.contains("Shorts", true) &&
+            if (!desc.isNullOrBlank() && desc.length > 20) {
+                if ((desc.contains("Shorts", true) || desc.contains("Reel", true)) &&
                     (desc.contains("video", true) || desc.contains(
                         "playing",
                         true,
                     ) || desc.contains("paused", true))
                 ) {
-                    Timber.d("Shorts video description found: $desc")
-                    foundShortsIndicators++
+                    Timber.d("Short-form content video description found: $desc")
+                    foundShortFormIndicators++
                 }
             }
 
@@ -188,15 +183,13 @@ class ShortsAccessibilityService : AccessibilityService() {
             }
         }
 
-        val hasPattern = foundShortsIndicators > 0
-        Timber.v("Scanned $nodesScanned nodes, found $foundShortsIndicators Shorts indicators")
+        val hasPattern = foundShortFormIndicators > 0
+        Timber.v("Scanned $nodesScanned nodes, found $foundShortFormIndicators short-form indicators")
         return hasPattern
     }
 
     private fun handleShortsDetected(root: AccessibilityNodeInfo) {
-        Timber.i("Handling Shorts detection - performing BACK action")
-        // Respect user's preference: autoClose / overlay / notify.
-        // Example deterministic action: back (safe & generic)
+        Timber.i("Handling short-form content detection - performing BACK action")
         val success = performGlobalAction(GLOBAL_ACTION_BACK)
         if (success) {
             Timber.d("BACK action performed successfully")
