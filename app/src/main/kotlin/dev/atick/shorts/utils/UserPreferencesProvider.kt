@@ -19,6 +19,7 @@ package dev.atick.shorts.utils
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -32,13 +33,15 @@ import timber.log.Timber
  * Manages user preferences for tracked packages using DataStore.
  *
  * Provides methods to store and retrieve which app packages are enabled
- * for short-form content blocking.
+ * for short-form content blocking, as well as onboarding state.
  *
  * @property context Application context for DataStore access
  */
 class UserPreferencesProvider(private val context: Context) {
 
     private val userPreferencesKey = stringPreferencesKey("dev.atick.shorts.preferences")
+    private val onboardingCompletedKey = booleanPreferencesKey("dev.atick.shorts.onboarding_completed")
+    private val disclosureAcceptedKey = booleanPreferencesKey("dev.atick.shorts.disclosure_accepted")
 
     /**
      * Gets the list of currently tracked (enabled) package names.
@@ -107,6 +110,52 @@ class UserPreferencesProvider(private val context: Context) {
         if (currentPackages.isEmpty()) {
             Timber.i("Initializing default packages")
             setTrackedPackages(PackageConstants.DEFAULT_ENABLED_PACKAGES)
+        }
+    }
+
+    /**
+     * Gets whether onboarding has been completed.
+     *
+     * @return Flow emitting true if onboarding is completed, false otherwise
+     */
+    fun getOnboardingCompleted(): Flow<Boolean> {
+        return context.dataStore.data.map { preferences ->
+            preferences[onboardingCompletedKey] ?: false
+        }
+    }
+
+    /**
+     * Sets onboarding completion status.
+     *
+     * @param completed true to mark onboarding as completed
+     */
+    suspend fun setOnboardingCompleted(completed: Boolean) {
+        Timber.i("Setting onboarding completed: $completed")
+        context.dataStore.edit { preferences ->
+            preferences[onboardingCompletedKey] = completed
+        }
+    }
+
+    /**
+     * Gets whether disclosure has been accepted.
+     *
+     * @return Flow emitting true if disclosure is accepted, false otherwise
+     */
+    fun getDisclosureAccepted(): Flow<Boolean> {
+        return context.dataStore.data.map { preferences ->
+            preferences[disclosureAcceptedKey] ?: false
+        }
+    }
+
+    /**
+     * Sets disclosure acceptance status.
+     *
+     * @param accepted true to mark disclosure as accepted
+     */
+    suspend fun setDisclosureAccepted(accepted: Boolean) {
+        Timber.i("Setting disclosure accepted: $accepted")
+        context.dataStore.edit { preferences ->
+            preferences[disclosureAcceptedKey] = accepted
         }
     }
 }
