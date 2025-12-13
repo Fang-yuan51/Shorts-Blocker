@@ -22,6 +22,27 @@ import android.view.accessibility.AccessibilityNodeInfo
 import timber.log.Timber
 import java.util.ArrayDeque
 
+/**
+ * Detector for YouTube Shorts short-form content.
+ *
+ * This detector identifies when a user is actively watching YouTube Shorts by searching
+ * for the distinctive "reel_progress_bar" UI element in the accessibility node hierarchy.
+ * This progress bar is unique to the Shorts viewing experience.
+ *
+ * **Detection Strategy:**
+ * - Performs BFS traversal of the accessibility node tree (max 120 nodes)
+ * - Searches for view IDs containing "reel_progress_bar"
+ * - Only triggers when this element is present and visible
+ *
+ * **Known Limitations:**
+ * - Detection patterns may break after YouTube app updates
+ * - Does not detect Shorts in the home feed shelf (intentional)
+ * - Requires accessibility service to have window content access
+ *
+ * **Compatibility:**
+ * - Tested with YouTube app versions 18.x - 19.x
+ * - May require updates for major YouTube redesigns
+ */
 class YouTubeShortsDetector : ShortFormContentDetector {
 
     override fun getPackageName(): String = "com.google.android.youtube"

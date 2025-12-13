@@ -22,7 +22,21 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// Material 3 typography scale
+/**
+ * Material 3 typography scale for the Shorts Blocker app.
+ *
+ * Defines the complete type system following Material Design 3 specifications.
+ * The scale includes 15 type styles organized into three categories:
+ * - **Display** (Large, Medium, Small): Largest text, reserved for short, important text
+ * - **Headline** (Large, Medium, Small): High-emphasis text for key titles
+ * - **Title** (Large, Medium, Small): Medium-emphasis text for section headers
+ * - **Body** (Large, Medium, Small): Text for main content and reading
+ * - **Label** (Large, Medium, Small): Text for labels, buttons, and UI controls
+ *
+ * All styles use the default system font family for consistency and readability.
+ *
+ * @see [Material 3 Typography Spec](https://m3.material.io/styles/typography)
+ */
 val Typography = Typography(
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,

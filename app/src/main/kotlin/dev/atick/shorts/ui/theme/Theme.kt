@@ -89,6 +89,26 @@ private val DarkColorScheme = darkColorScheme(
     scrim = Color(0xFF000000),
 )
 
+/**
+ * Main theme composable for Shorts Blocker app.
+ *
+ * Provides Material 3 theming with support for:
+ * - Dynamic color (Android 12+): Colors extracted from user's wallpaper
+ * - Light/Dark theme: Follows system preference or manual override
+ * - Fallback colors: Static Material 3 palette for older devices
+ *
+ * **Dynamic Color Behavior:**
+ * - On Android 12+ with [dynamicColor] = true: Uses system dynamic colors
+ * - On older Android versions: Uses static [LightColorScheme] / [DarkColorScheme]
+ *
+ * **Theme Switching:**
+ * - Automatically follows system dark mode preference via [isSystemInDarkTheme]
+ * - Status bar appearance adjusts based on theme
+ *
+ * @param darkTheme Whether to use dark theme. Defaults to system preference.
+ * @param dynamicColor Whether to use dynamic color (Android 12+). Default is true.
+ * @param content The composable content to wrap with this theme.
+ */
 @Composable
 fun ShortsBlockerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

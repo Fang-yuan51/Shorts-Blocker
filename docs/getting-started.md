@@ -173,6 +173,228 @@ val AVAILABLE_PACKAGES = listOf(
 
 Done! The UI will automatically show the new app.
 
+### Detailed Guide: Adding a New Detector
+
+This section provides step-by-step instructions with best practices.
+
+#### Step 1: Analyze the Target App
+
+Before writing code, use Android Studio's Layout Inspector:
+
+1. **Enable Developer Options** on your test device
+2. **Open the target app** to the short-form content section
+3. **Launch Layout Inspector**: Tools > Layout Inspector
+4. **Identify unique elements**:
+   - Look for distinctive view IDs (e.g., "reel_player", "shorts_container")
+   - Note element hierarchy and patterns
+   - Check for elements unique to short-form vs regular content
+
+**Example findings:**
+```
+TikTok:
+- View ID: "feed_view_pager" (present in For You feed)
+- Parent: "com.ss.android.ugc.aweme:id/video_container"
+- Full-screen video player in vertical layout
+```
+
+#### Step 2: Create the Detector Class
+
+Create a new file in `services/detectors/`:
+
+```kotlin
+/*
+ * Copyright 2025 Atick Faisal
+ * [License header...]
+ */
+
+package dev.atick.shorts.services.detectors
+
+import android.content.res.Resources
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
+import timber.log.Timber
+import java.util.ArrayDeque
+
+/**
+ * Detector for TikTok short-form content.
+ *
+ * Identifies when user is watching TikTok videos by detecting the
+ * distinctive feed_view_pager element in the For You feed.
+ *
+ * Detection Strategy:
+ * - Searches for "feed_view_pager" view ID
+ * - Verifies full-screen vertical layout
+ * - Confirms video container is present
+ *
+ * Compatibility: Tested with TikTok 32.x - 34.x
+ */
+class TikTokDetector : ShortFormContentDetector {
+
+    override fun getPackageName(): String = "com.zhiliaoapp.musically"
+
+    override fun isShortFormContent(
+        event: AccessibilityEvent,
+        rootNode: AccessibilityNodeInfo,
+        resources: Resources,
+    ): Boolean {
+        val queue = ArrayDeque<AccessibilityNodeInfo>()
+        queue.add(rootNode)
+
+        var nodeCount = 0
+        val maxNodes = 100 // Limit traversal for performance
+
+        while (queue.isNotEmpty() && nodeCount < maxNodes) {
+            val node = queue.removeFirst()
+            nodeCount++
+
+            // Get view ID and convert to lowercase for consistency
+            val viewId = node.viewIdResourceName?.lowercase()
+
+            // Check for TikTok's feed view pager
+            if (viewId != null && "feed_view_pager" in viewId) {
+                Timber.i("[TikTok] Short-form content detected via feed_view_pager")
+                return true
+            }
+
+            // Add children to queue for BFS traversal
+            for (i in 0 until node.childCount) {
+                node.getChild(i)?.let(queue::add)
+            }
+        }
+
+        Timber.v("[TikTok] No short-form content detected ($nodeCount nodes scanned)")
+        return false
+    }
+}
+```
+
+#### Step 3: Register the Detector
+
+Update `ShortFormContentBlockerService.kt`:
+
+```kotlin
+private val detectors: Map<String, ShortFormContentDetector> by lazy {
+    mapOf(
+        "com.google.android.youtube" to YouTubeShortsDetector(),
+        "com.instagram.android" to InstagramReelsDetector(),
+        "com.zhiliaoapp.musically" to TikTokDetector(), // ← Add this
+    )
+}
+```
+
+#### Step 4: Add to Package Constants
+
+Update `utils/PackageConstants.kt`:
+
+```kotlin
+object PackageConstants {
+    const val YOUTUBE_PACKAGE = "com.google.android.youtube"
+    const val INSTAGRAM_PACKAGE = "com.instagram.android"
+    const val TIKTOK_PACKAGE = "com.zhiliaoapp.musically" // ← Add this
+
+    val AVAILABLE_PACKAGES = listOf(
+        TrackedPackage(
+            packageName = YOUTUBE_PACKAGE,
+            displayName = "YouTube",
+            description = "Block YouTube Shorts",
+            isEnabled = true,
+        ),
+        TrackedPackage(
+            packageName = INSTAGRAM_PACKAGE,
+            displayName = "Instagram",
+            description = "Block Instagram Reels",
+            isEnabled = false,
+        ),
+        TrackedPackage(
+            packageName = TIKTOK_PACKAGE,
+            displayName = "TikTok",
+            description = "Block TikTok videos",
+            isEnabled = false,
+        ),
+    )
+
+    val DEFAULT_ENABLED_PACKAGES = AVAILABLE_PACKAGES
+        .filter { it.isEnabled }
+        .map { it.packageName }
+}
+```
+
+#### Step 5: Test Your Detector
+
+1. **Build and install**:
+   ```bash
+   ./gradlew installDebug
+   ```
+
+2. **Enable accessibility service** in Settings
+
+3. **Enable your new app** in the Shorts Blocker UI
+
+4. **Monitor logs**:
+   ```bash
+   adb logcat | grep -E "TikTok|ShortForm"
+   ```
+
+5. **Open target app** and navigate to short-form content
+
+6. **Verify detection**: Look for log messages indicating detection
+
+**Expected logs:**
+```
+I/ShortFormContentBlockerService: [com.zhiliaoapp.musically] Short-form content detected!
+I/TikTokDetector: [TikTok] Short-form content detected via feed_view_pager
+D/ShortFormContentBlockerService: [com.zhiliaoapp.musically] BACK action performed successfully
+```
+
+#### Step 6: Handle Edge Cases
+
+Consider these scenarios:
+
+- **False positives**: Detector triggers on regular content
+  - Solution: Add additional checks to narrow detection
+  
+- **Missed detections**: Some content not caught
+  - Solution: Look for alternative UI elements
+  
+- **App updates**: Detection breaks after app update
+  - Solution: Test with latest app version, update view IDs
+
+**Example refinement:**
+```kotlin
+override fun isShortFormContent(...): Boolean {
+    // ... existing code ...
+    
+    // Additional check to reduce false positives
+    if (viewId != null && "feed_view_pager" in viewId) {
+        // Verify it's actually playing video, not paused
+        val isPlaying = checkVideoPlayingState(node)
+        if (isPlaying) {
+            Timber.i("[TikTok] Confirmed short-form content")
+            return true
+        }
+    }
+    // ...
+}
+```
+
+#### Detection Best Practices
+
+✅ **DO:**
+- Limit node traversal (50-150 nodes max)
+- Use BFS (breadth-first search) with ArrayDeque
+- Convert view IDs to lowercase for comparison
+- Add descriptive Timber logs
+- Test on multiple app versions
+- Document detection strategy in KDoc
+- Handle null safety
+
+❌ **DON'T:**
+- Use DFS (can be very deep, slow)
+- Check unlimited nodes (performance)
+- Use hardcoded strings without explanation
+- Forget to recycle nodes if manually creating them
+- Rely on text content (can change with language)
+
 ### Test Detection Logic
 
 Enable verbose logging and use Logcat:
