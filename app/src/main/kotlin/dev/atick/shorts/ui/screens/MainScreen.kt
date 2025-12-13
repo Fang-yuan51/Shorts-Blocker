@@ -16,6 +16,8 @@
 
 package dev.atick.shorts.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -24,6 +26,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,7 +34,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Settings
@@ -46,6 +51,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
@@ -62,6 +68,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import dev.atick.shorts.models.TrackedPackage
 import dev.atick.shorts.ui.components.TrackedPackagesSection
 import dev.atick.shorts.ui.viewmodels.MainViewModel
@@ -144,6 +151,9 @@ fun MainScreenContent(
     onOpenSettings: () -> Unit = {},
     onPackageToggle: (String, Boolean) -> Unit = { _, _ -> },
 ) {
+    val context = LocalContext.current
+    val scrollState = rememberScrollState()
+
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -151,19 +161,35 @@ fun MainScreenContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
         ) {
-            if (isPermissionGranted) {
-                ServiceActiveContent(
-                    trackedPackages = trackedPackages,
-                    onPackageToggle = onPackageToggle,
-                    onManagePermission = onOpenSettings,
-                )
-            } else {
-                SetupRequiredContent(
-                    onOpenSettings = onOpenSettings,
+            // Main content
+            Column(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                if (isPermissionGranted) {
+                    ServiceActiveContent(
+                        trackedPackages = trackedPackages,
+                        onPackageToggle = onPackageToggle,
+                        onManagePermission = onOpenSettings,
+                    )
+                } else {
+                    SetupRequiredContent(
+                        onOpenSettings = onOpenSettings,
+                    )
+                }
+                // Footer
+                FooterSection(
+                    onLinkClick = { url ->
+                        Timber.d("Opening URL: $url")
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        context.startActivity(intent)
+                    },
                 )
             }
         }
@@ -502,6 +528,84 @@ private fun InstructionStep(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+/**
+ * Footer section with legal and informational links.
+ *
+ * @param onLinkClick Callback when a link is clicked, receives the URL
+ */
+@Composable
+private fun FooterSection(
+    onLinkClick: (String) -> Unit = {},
+) {
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        // Links row
+        FlowRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            horizontalArrangement = Arrangement.Center,
+
+        ) {
+            FooterLink(
+                text = "Terms",
+                onClick = { onLinkClick("https://terms.atick.dev/") },
+            )
+
+            FooterLink(
+                text = "Privacy",
+                onClick = { onLinkClick("https://privacy.atick.dev/") },
+            )
+
+            FooterLink(
+                text = "Licenses",
+                onClick = {
+                    context.startActivity(
+                        Intent(
+                            context,
+                            OssLicensesMenuActivity::class.java,
+                        ),
+                    )
+                },
+            )
+
+            FooterLink(
+                text = "Source",
+                onClick = { onLinkClick("https://github.com/atick-faisal/Shorts-Blocker") },
+            )
+        }
+    }
+}
+
+/**
+ * A clickable text link for the footer.
+ *
+ * @param text The link text to display
+ * @param onClick Callback when the link is clicked
+ */
+@Composable
+private fun FooterLink(
+    text: String,
+    onClick: () -> Unit,
+) {
+    TextButton(
+        onClick = onClick,
+        modifier = Modifier.padding(0.dp),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Medium,
+        )
     }
 }
 
