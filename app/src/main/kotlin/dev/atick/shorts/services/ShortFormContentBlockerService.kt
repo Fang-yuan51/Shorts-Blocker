@@ -66,10 +66,10 @@ class ShortFormContentBlockerService : AccessibilityService() {
                 Timber.d("Tracked packages updated: ${packages.joinToString()}")
                 val info = AccessibilityServiceInfo().apply {
                     eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
-                            AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
+                        AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
                     feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
                     flags = AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS or
-                            AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
+                        AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
                     packageNames = packages.toTypedArray()
                     notificationTimeout = 100
                 }
@@ -87,15 +87,15 @@ class ShortFormContentBlockerService : AccessibilityService() {
         if (
             event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED ||
             (
-                    event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED &&
-                            event.contentChangeTypes and
-                            AccessibilityEvent.CONTENT_CHANGE_TYPE_SUBTREE != 0
-                    )
+                event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED &&
+                    event.contentChangeTypes and
+                    AccessibilityEvent.CONTENT_CHANGE_TYPE_SUBTREE != 0
+                )
         ) {
             val packageName = event.packageName?.toString()
             Timber.v(
                 "Accessibility event: type=${event.eventType}, " +
-                        "className=${event.className}, package=$packageName",
+                    "className=${event.className}, package=$packageName",
             )
 
             // Get the appropriate detector for this package
