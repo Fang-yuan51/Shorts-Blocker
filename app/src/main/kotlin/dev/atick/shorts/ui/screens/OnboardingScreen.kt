@@ -33,6 +33,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -253,7 +254,7 @@ private fun WelcomePage() {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "✓ 100% private - no data collection",
+                    text = "✓ Open Source App - no data collection",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -357,7 +358,7 @@ private fun FlowDiagram(
 
         // Redirect
         FlowCard(
-            icon = Icons.Rounded.Close,
+            icon = Icons.AutoMirrored.Default.ArrowBack,
             label = "Back",
             color = MaterialTheme.colorScheme.secondaryContainer,
             iconTint = MaterialTheme.colorScheme.secondary,

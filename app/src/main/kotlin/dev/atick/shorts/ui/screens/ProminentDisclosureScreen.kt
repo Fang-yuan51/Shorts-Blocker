@@ -126,7 +126,7 @@ fun ProminentDisclosureScreen(
                 icon = Icons.Rounded.Lock,
                 title = "Your Privacy",
                 content = "This app does not collect, store, or share any personal or sensitive data accessed via the AccessibilityService.\n\n" +
-                    "All processing happens locally on your device.",
+                    "All processing happens locally on your device. The Source code for the app is publicly available for transparency.",
             )
 
             Spacer(modifier = Modifier.height(32.dp))
