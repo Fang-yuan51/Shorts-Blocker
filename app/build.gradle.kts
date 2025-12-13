@@ -159,4 +159,6 @@ dependencies {
     dokkaPlugin(libs.dokka.mermaid.plugin)
 
     implementation(libs.timber.logging)
+
+    implementation(libs.google.oss.licenses)
 }
