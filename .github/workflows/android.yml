@@ -11,13 +11,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Build with Gradle
-        run: ./gradlew assembleDebug
+      - name: Build APK
+        run: bash ./gradlew assembleDebug
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: my-noscroll-app
+          name: Silent-NoScroll-App
           path: app/build/outputs/apk/debug/*.apk
